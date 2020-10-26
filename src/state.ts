@@ -8,7 +8,7 @@ export class State {
    public workspaceConfig: vscode.WorkspaceConfiguration;
 
    constructor(private context: vscode.ExtensionContext) {
-      this.workspaceConfig = vscode.workspace.getConfiguration('nextflow-sandbox');
+      this.workspaceConfig = vscode.workspace.getConfiguration('scriptastic');
    }
 
    // pipelines
@@ -48,28 +48,23 @@ export class State {
       this.context.workspaceState.update(pipeline.name, pipeline);
    }
 
-   getConfigurationPropertyAsString(name: string, defaultValue: string): string {
-      let value = defaultValue;
+   getConfigurationPropertyAsString(name: string): string | undefined {
       const property = this.workspaceConfig.inspect(name);
       if (property) {
-         const propertyValue = property.globalValue as string;
-         if (propertyValue !== undefined) {
-            value = propertyValue;
+         const globalValue = property.globalValue as string;
+         if (globalValue !== undefined) {
+            return globalValue;
+         }
+         const workspaceValue = property.workspaceValue as string;
+         if (workspaceValue !== undefined) {
+            return workspaceValue;
+         }
+         const defaultValue = property.defaultValue as string;
+         if (defaultValue !== undefined) {
+            return defaultValue;
          }
       }
-      return value;
-   }
-
-   getConfigurationPropertyAsBoolean(name: string, defaultValue: boolean): boolean {
-      let value = defaultValue;
-      const property = this.workspaceConfig.inspect(name);
-      if (property) {
-         const propertyValue = property.globalValue as boolean;
-         if (propertyValue !== undefined) {
-            value = propertyValue;
-         }
-      }
-      return value;
+      return undefined;
    }
 }
 

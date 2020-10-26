@@ -8,7 +8,7 @@
   "publisher": "mbrazell",
   "author": {
     "name": "Michael Brazell",
-    "email": "mbrazell@mechdyne.com"
+    "email": "mbrazell@protonmail.com"
   },
   "version": "0.0.1",
   "engines": {
@@ -22,11 +22,34 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "Scriptastic",
+      "properties": {
+        "scriptastic.shellExec.windows": {
+          "type": "string",
+          "description": "Path to the shell executable to use for script execution",
+          "default": "C:\\Windows\\System32\\cmd.exe",
+          "title": "Windows Shell Executable"
+        },
+        "scriptastic.shellExec.osx": {
+          "type": "string",
+          "description": "Path to the shell executable to use for script execution",
+          "default": "Terminal.app",
+          "title": "OSX Shell Executable"
+        },
+        "scriptastic.shellExec.linux": {
+          "type": "string",
+          "description": "Path to the shell executable to use for script execution",
+          "default": "xterm",
+          "title": "Linux Shell Executable"
+        }
+      }
+    },
     "viewsContainers": {
       "activitybar": [
         {
           "id": "scriptastic-explorer",
-          "title": "Scriptasic",
+          "title": "Scriptastic",
           "icon": "media/NF.svg"
         }
       ]
@@ -70,7 +93,7 @@
       },
       {
         "command": "pipelines.remove",
-        "title": "Delete"
+        "title": "Remove"
       },
       {
         "command": "pipelines.removeDep",
@@ -127,6 +150,11 @@
           "command": "pipelines.moveScriptDown",
           "when": "view == pipelines && viewItem == script",
           "group": "pipeline.y"
+        },
+        {
+          "command": "pipelines.remove",
+          "when": "view == pipelines",
+          "group": "pipeline.z"
         }
       ]
     }
