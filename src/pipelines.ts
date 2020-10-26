@@ -16,7 +16,7 @@ export class Pipeline {
    public mtimeMs: number = 0;
 
    constructor(public readonly name: string,
-      public script: Array<vscode.Uri> = new Array<vscode.Uri>()) {
+      public script: Array<string> = new Array<string>()) {
    }
 }
 
@@ -111,7 +111,7 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
          }
          const script = await vscode.window.showOpenDialog({ canSelectFolders: false, canSelectFiles: true, canSelectMany: false, openLabel: 'Select Script File' });//, filters: { 'Nextflow Config': ['config'] } });
          if (script) {
-            pipeline.script.push(script[0]);
+            pipeline.script.push(script[0].fsPath);
             this.state.updatePipeline(pipeline);
             this.refresh();
          }
@@ -127,8 +127,8 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
             vscode.window.showWarningMessage('Pipeline is running; please stop it before attempting to remove');
             return Promise.resolve(false);
          }
-         let selection = await vscode.window.showWarningMessage('Delete "' + name + '"?  Script file references will NOT be deleted', 'Yes, Delete', 'Cancel');
-         if (selection === 'Yes, Delete') {
+         let selection = await vscode.window.showWarningMessage('Remove "' + name + '" pipeline?  Script file references will NOT be deleted', 'Yes, Remove', 'Cancel');
+         if (selection === 'Yes, Remove') {
             const pipeline = this.state.getPipeline(name);
             if (pipeline) {
                // hide/dispose output
@@ -164,9 +164,9 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
          let pipeline = this.state.getPipeline(dependency.pipeline);
          if (pipeline) {
             if (dependency.resourceUri) {
-               const index = pipeline.script.indexOf(dependency.resourceUri);
-               if (index >= 1) {
-                  pipeline.script.splice(pipeline.script.indexOf(dependency.resourceUri), 1);
+               const index = pipeline.script.indexOf(dependency.resourceUri.fsPath);
+               if (index >= 0) {
+                  pipeline.script.splice(pipeline.script.indexOf(dependency.resourceUri.fsPath), 1);
                   this.state.updatePipeline(pipeline);
                   this.refresh();
                   return true;
@@ -191,25 +191,34 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
             vscode.window.showErrorMessage('Pipeline already running');
             return;
          }
+         if (pipeline.script.length === 0) {
+            vscode.window.showErrorMessage('Empty pipeline; add at least one script to run');
+            return;
+         }
 
-         // formulate command
-         let command = "";
-         pipeline.script.forEach(script => {
-            command += script + ";";
-         });
-         command += '\r\n';
+         // formulate params
+         let params = ['"', '/c', pipeline.script[0]];
+         for (let i = 1; i < pipeline.script.length; i++) {
+            params.push('&');
+            params.push(pipeline.script[i]);
+         }
+         params.push('"');
 
          // clear/show output  
          pipelineRes.outputCh.clear();
          pipelineRes.outputCh.show();
 
          // output command being executed
-         pipelineRes.outputCh.append(command);
+         //pipelineRes.outputCh.append(command);
+
+         // get path to shell exe from settings
+         // TODO: handle OSX/Linux
+         const automationShell = this.state.getConfigurationPropertyAsString('shellExec.windows') || 'cmd.exe';
 
          // spawn
-         const proc = cp.spawn(command);//, { cwd: pipelineFolder });
+         const proc = cp.spawn(automationShell, params);
          pipelineRes.proc = proc;
-         this.refresh();
+         //this.refresh();
 
          // invoke started event cb
          this.on('started', name);
@@ -275,7 +284,7 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
          let pipeline = this.state.getPipeline(dependency.pipeline);
          if (pipeline) {
             if (dependency.resourceUri) {
-               const index = pipeline.script.indexOf(dependency.resourceUri);
+               const index = pipeline.script.indexOf(dependency.resourceUri.fsPath);
                if (index >= 1) {
                   pipeline.script.splice(index - 1, 0, pipeline.script.splice(index, 1)[0]);
                   this.state.updatePipeline(pipeline);
@@ -303,7 +312,7 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
          let pipeline = this.state.getPipeline(dependency.pipeline);
          if (pipeline) {
             if (dependency.resourceUri) {
-               const index = pipeline.script.indexOf(dependency.resourceUri);
+               const index = pipeline.script.indexOf(dependency.resourceUri.fsPath);
                if (index >= 0 && index < pipeline.script.length - 1) {
                   pipeline.script.splice(index + 1, 0, pipeline.script.splice(index, 1)[0]);
                   this.state.updatePipeline(pipeline);
@@ -326,7 +335,7 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
                let children = new Array<Dependency>();
                // script
                pipeline.script.forEach(script => {
-                  children.push(new Dependency(path.basename(script.path), 'script', vscode.TreeItemCollapsibleState.None, script, { command: 'pipelines.openFile', title: "Open File", arguments: [vscode.Uri.file(script.path)] }, element.name));
+                  children.push(new Dependency(path.basename(script), 'script', vscode.TreeItemCollapsibleState.None, vscode.Uri.file(script), { command: 'pipelines.openFile', title: "Open File", arguments: [vscode.Uri.file(script)] }, element.name));
                });
 
                return Promise.resolve(children);
