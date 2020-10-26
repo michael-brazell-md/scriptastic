@@ -1,7 +1,15 @@
 {
   "name": "scriptastic",
-  "displayName": "scriptastic",
+  "displayName": "Scriptastic",
   "description": "",
+  "repository": {
+    "url": "https://github.com/michael-brazell-md/scriptastic"
+  },
+  "publisher": "mbrazell",
+  "author": {
+    "name": "Michael Brazell",
+    "email": "mbrazell@mechdyne.com"
+  },
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.50.0"
@@ -10,16 +18,118 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:scriptastic.helloWorld"
+    "onView:pipelines"
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "scriptastic-explorer",
+          "title": "Scriptasic",
+          "icon": "media/NF.svg"
+        }
+      ]
+    },
+    "views": {
+      "scriptastic-explorer": [
+        {
+          "id": "pipelines",
+          "name": "Pipelines"
+        }
+      ]
+    },
     "commands": [
       {
-        "command": "scriptastic.helloWorld",
-        "title": "Hello World"
+        "command": "pipelines.add",
+        "title": "Add",
+        "icon": {
+          "light": "resources/light/add.svg",
+          "dark": "resources/dark/add.svg"
+        }
+      },
+      {
+        "command": "pipelines.addScript",
+        "title": "Add Script File..."
+      },
+      {
+        "command": "pipelines.run",
+        "title": "Run",
+        "icon": {
+          "light": "resources/light/run.svg",
+          "dark": "resources/dark/run.svg"
+        }
+      },
+      {
+        "command": "pipelines.stop",
+        "title": "Stop",
+        "icon": {
+          "light": "resources/light/stop.svg",
+          "dark": "resources/dark/stop.svg"
+        }
+      },
+      {
+        "command": "pipelines.remove",
+        "title": "Delete"
+      },
+      {
+        "command": "pipelines.removeDep",
+        "title": "Remove Reference"
+      },
+      {
+        "command": "pipelines.moveScriptUp",
+        "title": "Move Up"
+      },
+      {
+        "command": "pipelines.moveScriptDown",
+        "title": "Move Down"
+      },
+      {
+        "command": "pipelines.openFile",
+        "title": "Open File"
       }
-    ]
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "pipelines.add",
+          "when": "view == pipelines",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "pipelines.run",
+          "when": "view == pipelines && viewItem == stopped",
+          "group": "pipeline.a"
+        },
+        {
+          "command": "pipelines.stop",
+          "when": "view == pipelines && viewItem == running",
+          "group": "pipeline.a"
+        },
+        {
+          "command": "pipelines.addScript",
+          "when": "view == pipelines && viewItem == stopped",
+          "group": "pipeline.g"
+        },
+        {
+          "command": "pipelines.removeDep",
+          "when": "view == pipelines && viewItem == script",
+          "group": "pipeline.z"
+        },
+        {
+          "command": "pipelines.moveScriptUp",
+          "when": "view == pipelines && viewItem == script",
+          "group": "pipeline.y"
+        },
+        {
+          "command": "pipelines.moveScriptDown",
+          "when": "view == pipelines && viewItem == script",
+          "group": "pipeline.y"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -31,8 +141,10 @@
   },
   "devDependencies": {
     "@types/glob": "^7.1.3",
+    "@types/mkdirp": "^1.0.1",
     "@types/mocha": "^8.0.0",
     "@types/node": "^12.11.7",
+    "@types/rimraf": "^3.0.0",
     "@types/vscode": "^1.50.0",
     "@typescript-eslint/eslint-plugin": "^4.1.1",
     "@typescript-eslint/parser": "^4.1.1",
