@@ -124,7 +124,17 @@
         {
           "command": "pipelines.run",
           "when": "view == pipelines && viewItem == stopped",
+          "group": "inline"
+        },
+        {
+          "command": "pipelines.run",
+          "when": "view == pipelines && viewItem == stopped",
           "group": "pipeline.a"
+        },
+        {
+          "command": "pipelines.stop",
+          "when": "view == pipelines && viewItem == running",
+          "group": "inline"
         },
         {
           "command": "pipelines.stop",
