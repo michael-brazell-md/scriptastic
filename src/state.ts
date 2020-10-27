@@ -13,14 +13,14 @@ export class State {
 
    // pipelines
    getPipelines(): Array<string> {
-      return this.context.workspaceState.get('Pipelines') as Array<string> || new Array<string>();
+      return this.context.workspaceState.get('pipelines') as Array<string> || new Array<string>();
    }
 
    addPipeline(pipeline: pipelines.Pipeline) {
       let pipelineArr = this.getPipelines();
       if (!pipelineArr.find(n => n === pipeline.name)) {
          pipelineArr.push(pipeline.name);
-         this.context.workspaceState.update('Pipelines', pipelineArr);
+         this.context.workspaceState.update('pipelines', pipelineArr);
       }
       this.updatePipeline(pipeline);
    }
@@ -30,7 +30,7 @@ export class State {
       let pipeline = pipelineArr.find(n => n === name);
       if (pipeline) {
          pipelineArr.splice(pipelineArr.indexOf(pipeline), 1);
-         this.context.workspaceState.update('Pipelines', pipelineArr);
+         this.context.workspaceState.update('pipelines', pipelineArr);
          this.context.workspaceState.update(name, undefined);
          return true;
       }

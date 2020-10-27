@@ -218,7 +218,7 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
          // spawn
          const proc = cp.spawn(automationShell, params);
          pipelineRes.proc = proc;
-         //this.refresh();
+         this.refresh();
 
          // invoke started event cb
          this.on('started', name);
