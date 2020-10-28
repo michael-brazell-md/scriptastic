@@ -120,6 +120,47 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
       }
    }
 
+   async rename(name: string): Promise<boolean> {
+      try {
+         const pipeline = this.state.getPipeline(name);
+         if (!pipeline) {
+            vscode.window.showErrorMessage('Pipeline not found: ' + name);
+            return Promise.resolve(false);
+         }
+         const pipelineRes = this.nameToResourcesMap[name];
+         if (pipelineRes && pipelineRes.proc !== undefined) {
+            vscode.window.showErrorMessage('Pipeline is running; please stop it before attempting to rename');
+            return Promise.resolve(false);
+         }
+
+         // get rename
+         const input = await vscode.window.showInputBox({ prompt: 'Enter new name.' });
+         if (!input) {
+            return Promise.resolve(false);
+         }
+
+         // replace any spaces with '_' to avoid pathing issues when launching container
+         //const name = input.replace(/ /g, '_');
+         const rename = input;
+         if (rename === name) {
+            vscode.window.showWarningMessage('Same name entered');
+            return Promise.resolve(false);
+         }
+
+         // remove old, add new
+         this.state.remPipeline(name);
+         let renamed = new Pipeline(rename, pipeline.script);
+         this.state.addPipeline(renamed);
+         this.refresh();
+
+         return Promise.resolve(true);
+      }
+      catch (err) {
+         vscode.window.showErrorMessage(err.toString());
+      }
+      return Promise.resolve(false);
+   }
+
    async rem(name: string): Promise<boolean> {
       try {
          const pipelineRes = this.nameToResourcesMap[name];

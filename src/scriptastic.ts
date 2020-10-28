@@ -87,6 +87,16 @@ export class Scriptastic {
             }
         });
 
+        this.registerCommand(context, 'pipelines.rename', async (dependency: pipelines.Dependency) => {
+            try {
+                const renamed = await this.pipelinesTreeDataProvider.rename(dependency.name);
+                if (renamed) {
+                }
+            } catch (err) {
+                vscode.window.showErrorMessage(err.toString());
+            }
+        });
+
         this.registerCommand(context, 'pipelines.remove', async (dependency: pipelines.Dependency) => {
             try {
                 const removed = await this.pipelinesTreeDataProvider.rem(dependency.name);

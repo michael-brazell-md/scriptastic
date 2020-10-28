@@ -10,7 +10,7 @@
     "name": "Michael Brazell",
     "email": "mbrazell@protonmail.com"
   },
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.50.0"
   },
@@ -66,30 +66,26 @@
       {
         "command": "pipelines.add",
         "title": "Add",
-        "icon": {
-          "light": "resources/light/add.svg",
-          "dark": "resources/dark/add.svg"
-        }
+        "icon": "$(add)"
       },
       {
         "command": "pipelines.addScript",
-        "title": "Add Script File..."
+        "title": "Add Script File...",
+        "icon": "$(add)"
       },
       {
         "command": "pipelines.run",
         "title": "Run",
-        "icon": {
-          "light": "resources/light/run.svg",
-          "dark": "resources/dark/run.svg"
-        }
+        "icon": "$(debug-start)"
       },
       {
         "command": "pipelines.stop",
         "title": "Stop",
-        "icon": {
-          "light": "resources/light/stop.svg",
-          "dark": "resources/dark/stop.svg"
-        }
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "pipelines.rename",
+        "title": "Rename"
       },
       {
         "command": "pipelines.remove",
@@ -97,15 +93,18 @@
       },
       {
         "command": "pipelines.removeDep",
-        "title": "Remove Reference"
+        "title": "Remove Reference",
+        "icon": "$(remove-close)"
       },
       {
         "command": "pipelines.moveScriptUp",
-        "title": "Move Up"
+        "title": "Move Up",
+        "icon": "$(arrow-up)"
       },
       {
         "command": "pipelines.moveScriptDown",
-        "title": "Move Down"
+        "title": "Move Down",
+        "icon": "$(arrow-down)"
       },
       {
         "command": "pipelines.openFile",
@@ -144,7 +143,17 @@
         {
           "command": "pipelines.addScript",
           "when": "view == pipelines && viewItem == stopped",
+          "group": "inline"
+        },
+        {
+          "command": "pipelines.addScript",
+          "when": "view == pipelines && viewItem == stopped",
           "group": "pipeline.g"
+        },
+        {
+          "command": "pipelines.removeDep",
+          "when": "view == pipelines && viewItem == script",
+          "group": "inline"
         },
         {
           "command": "pipelines.removeDep",
@@ -154,7 +163,17 @@
         {
           "command": "pipelines.moveScriptUp",
           "when": "view == pipelines && viewItem == script",
+          "group": "inline"
+        },
+        {
+          "command": "pipelines.moveScriptUp",
+          "when": "view == pipelines && viewItem == script",
           "group": "pipeline.y"
+        },
+        {
+          "command": "pipelines.moveScriptDown",
+          "when": "view == pipelines && viewItem == script",
+          "group": "inline"
         },
         {
           "command": "pipelines.moveScriptDown",
@@ -162,8 +181,13 @@
           "group": "pipeline.y"
         },
         {
+          "command": "pipelines.rename",
+          "when": "view == pipelines && viewItem == stopped",
+          "group": "pipeline.y"
+        },
+        {
           "command": "pipelines.remove",
-          "when": "view == pipelines",
+          "when": "view == pipelines && viewItem == stopped",
           "group": "pipeline.z"
         }
       ]
