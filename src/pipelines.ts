@@ -9,12 +9,10 @@ import { prototype } from 'events';
 import { State } from './state';
 import { Pipe } from 'stream';
 import { getVSCodeDownloadUrl } from 'vscode-test/out/util';
+import { URLSearchParams } from 'url';
+import { notDeepEqual } from 'assert';
 
 export class Pipeline {
-
-   public run: number = 0;
-   public mtimeMs: number = 0;
-
    constructor(public readonly name: string,
       public script: Array<string> = new Array<string>()) {
    }
@@ -50,7 +48,8 @@ export class Dependency extends vscode.TreeItem {
          return '[' + this.contextValue + ']';
       }
       return undefined;
-   }*/
+   }
+   */
 }
 
 export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Dependency> {
@@ -237,27 +236,56 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
             return;
          }
 
-         // formulate params
-         let params = ['"', '/c', pipeline.script[0]];
-         for (let i = 1; i < pipeline.script.length; i++) {
-            params.push('&');
-            params.push(pipeline.script[i]);
+         // check for supported platform
+         const platform = this.getPlatform();
+         if (platform === undefined) {
+            vscode.window.showErrorMessage('Unsupported platform: ' + process.platform);
+            return;
          }
-         params.push('"');
 
+         // get script delimiter from settings
+         const scriptDelim = this.state.getConfigurationPropertyAsString('scriptDelim', platform);
+         if (scriptDelim === undefined) {
+            vscode.window.showErrorMessage('Define a script delimiter for your platform in settings before running');
+            return;
+         }
+
+         // get startup options for shell exe from settings
+         let shellOpts: string[] = [];
+         const shellOptsPlatform = this.state.getConfigurationPropertyAsString('shellOpts', platform);
+         if (shellOptsPlatform !== undefined) {
+            shellOpts.push(shellOptsPlatform);
+         }
+
+         // formulate params
+         let scripts = pipeline.script[0];
+         for (let i = 1; i < pipeline.script.length; i++) {
+            scripts += scriptDelim;
+            scripts += pipeline.script[i];
+         }
+         let params = shellOpts;
+         params.push(scripts);
+         
          // clear/show output  
          pipelineRes.outputCh.clear();
          pipelineRes.outputCh.show();
 
-         // output command being executed
-         //pipelineRes.outputCh.append(command);
-
          // get path to shell exe from settings
-         // TODO: handle OSX/Linux
-         const automationShell = this.state.getConfigurationPropertyAsString('shellExec.windows') || 'cmd.exe';
+         const shellExec = this.state.getConfigurationPropertyAsString('shellExec', platform);
+         if (shellExec === undefined) {
+            vscode.window.showErrorMessage('Define a shell executable for your platform in settings before running');
+            return;
+         }
+         
+         // output command being executed
+         pipelineRes.outputCh.append(shellExec + ' ');
+         params.forEach(param => {
+            pipelineRes.outputCh.append(param + ' ');
+         });
+         pipelineRes.outputCh.append('\n');
 
          // spawn
-         const proc = cp.spawn(automationShell, params);
+         const proc = cp.spawn(shellExec, params);
          pipelineRes.proc = proc;
          this.refresh();
 
@@ -389,6 +417,9 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
                   const pipelineRes = this.pipelineResources(name);
                   const contextValue = pipelineRes.proc ? 'running' : 'stopped';
                   let dependency = new Dependency(name, contextValue, vscode.TreeItemCollapsibleState.Collapsed);
+                  if (contextValue === 'running') {
+                     dependency.description = '[running]';
+                  }
                   children.push(dependency);
                });
 
@@ -404,5 +435,21 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
 
    getTreeItem(element: Dependency): Dependency {
       return element;
+   }
+
+   getPlatform(): string | undefined {
+      let platform = undefined;
+      switch (process.platform) {
+         case 'win32':
+            platform = 'windows';
+            break;
+         case 'darwin':
+            platform = 'osx';
+            break;
+         case 'linux':
+            platform = 'linux';
+            break;    
+      }
+      return platform;
    }
 }

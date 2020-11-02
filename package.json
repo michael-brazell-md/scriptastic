@@ -27,21 +27,57 @@
       "properties": {
         "scriptastic.shellExec.windows": {
           "type": "string",
-          "description": "Path to the shell executable to use for script execution",
+          "description": "Path to the shell executable to use for script execution on Windows",
           "default": "C:\\Windows\\System32\\cmd.exe",
           "title": "Windows Shell Executable"
         },
         "scriptastic.shellExec.osx": {
           "type": "string",
-          "description": "Path to the shell executable to use for script execution",
-          "default": "Terminal.app",
+          "description": "Path to the shell executable to use for script execution on OSX",
+          "default": "/bin/bash",
           "title": "OSX Shell Executable"
         },
         "scriptastic.shellExec.linux": {
           "type": "string",
-          "description": "Path to the shell executable to use for script execution",
-          "default": "xterm",
+          "description": "Path to the shell executable to use for script execution on Linux",
+          "default": "/bin/bash",
           "title": "Linux Shell Executable"
+        },
+        "scriptastic.shellOpts.windows": {
+          "type": "string",
+          "description": "Startup options for the shell executable on Windows",
+          "default": "/c",
+          "title": "Windows Shell Options"
+        },
+        "scriptastic.shellOpts.osx": {
+          "type": "string",
+          "description": "Startup options for the shell executable on OSX",
+          "default": "-c",
+          "title": "OSX Shell Options"
+        },
+        "scriptastic.shellOpts.linux": {
+          "type": "string",
+          "description": "Startup options for the shell executable on Linux",
+          "default": "-c",
+          "title": "Linux Shell Options"
+        },
+        "scriptastic.scriptDelim.windows": {
+          "type": "string",
+          "description": "Delimiter to use for script chaining on Windows",
+          "default": "&",
+          "title": "Windows Script Delimiter"
+        },
+        "scriptastic.scriptDelim.osx": {
+          "type": "string",
+          "description": "Delimiter to use for script chaining on OSX",
+          "default": ";",
+          "title": "OSX Script Delimiter"
+        },
+        "scriptastic.scriptDelim.linux": {
+          "type": "string",
+          "description": "Delimiter to use for script chaining on Linux",
+          "default": ";",
+          "title": "Linux Script Delimiter"
         }
       }
     },
