@@ -48,8 +48,8 @@ export class State {
       this.context.workspaceState.update(pipeline.name, pipeline);
    }
 
-   getConfigurationPropertyAsString(name: string): string | undefined {
-      const property = this.workspaceConfig.inspect(name);
+   getConfigurationPropertyAsString(name: string, platform?: string): string | undefined {
+      const property = this.workspaceConfig.inspect(name + (platform !== undefined ? ('.' + platform) : ''));
       if (property) {
          const globalValue = property.globalValue as string;
          if (globalValue !== undefined) {
