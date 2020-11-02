@@ -133,7 +133,7 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
          }
 
          // get rename
-         const input = await vscode.window.showInputBox({ prompt: 'Enter new name.' });
+         const input = await vscode.window.showInputBox({ prompt: 'Enter new name.', value: name });
          if (!input) {
             return Promise.resolve(false);
          }

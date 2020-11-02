@@ -10,7 +10,7 @@
     "name": "Michael Brazell",
     "email": "mbrazell@protonmail.com"
   },
-  "version": "0.0.3",
+  "version": "0.0.4",
   "engines": {
     "vscode": "^1.50.0"
   },
@@ -128,6 +128,16 @@
         "title": "Remove"
       },
       {
+        "command": "pipelines.moveUp",
+        "title": "Move Up",
+        "icon": "$(arrow-up)"
+      },
+      {
+        "command": "pipelines.moveDown",
+        "title": "Move Down",
+        "icon": "$(arrow-down)"
+      },
+      {
         "command": "pipelines.removeDep",
         "title": "Remove Reference",
         "icon": "$(remove-close)"
@@ -225,6 +235,16 @@
           "command": "pipelines.remove",
           "when": "view == pipelines && viewItem == stopped",
           "group": "pipeline.z"
+        },
+        {
+          "command": "pipelines.moveUp",
+          "when": "view == pipelines && viewItem == stopped",
+          "group": "inline"
+        },
+        {
+          "command": "pipelines.moveDown",
+          "when": "view == pipelines && viewItem == stopped",
+          "group": "inline"
         }
       ]
     }

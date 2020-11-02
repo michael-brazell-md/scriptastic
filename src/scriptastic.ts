@@ -107,6 +107,34 @@ export class Scriptastic {
             }
         });
 
+        this.registerCommand(context, 'pipelines.moveUp', (dependency: pipelines.Dependency) => {
+            try {
+                let pipelineArr = this.state.getPipelines();
+                const index = pipelineArr.indexOf(dependency.name);
+                if (index >= 1) {
+                    pipelineArr.splice(index - 1, 0, pipelineArr.splice(index, 1)[0]);
+                    this.state.setPipelines(pipelineArr);
+                    this.pipelinesTreeDataProvider.refresh();
+                }      
+            } catch (err) {
+                vscode.window.showErrorMessage(err.toString());
+            }
+        });
+
+        this.registerCommand(context, 'pipelines.moveDown', (dependency: pipelines.Dependency) => {
+            try {
+                let pipelineArr = this.state.getPipelines();
+                const index = pipelineArr.indexOf(dependency.name);
+                if (index >= 0 && index < pipelineArr.length - 1) {
+                    pipelineArr.splice(index + 1, 0, pipelineArr.splice(index, 1)[0]);
+                    this.state.setPipelines(pipelineArr);
+                    this.pipelinesTreeDataProvider.refresh();
+                }      
+            } catch (err) {
+                vscode.window.showErrorMessage(err.toString());
+            }
+        });
+
         this.registerCommand(context, 'pipelines.removeDep', (dependency: pipelines.Dependency) => {
             try {
                 const removed = this.pipelinesTreeDataProvider.remDep(dependency);

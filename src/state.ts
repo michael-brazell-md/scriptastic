@@ -16,6 +16,10 @@ export class State {
       return this.context.workspaceState.get('pipelines') as Array<string> || new Array<string>();
    }
 
+   setPipelines(pipelineArr: Array<string>) {
+      this.context.workspaceState.update('pipelines', pipelineArr);
+   }
+
    addPipeline(pipeline: pipelines.Pipeline) {
       let pipelineArr = this.getPipelines();
       if (!pipelineArr.find(n => n === pipeline.name)) {
