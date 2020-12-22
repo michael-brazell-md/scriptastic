@@ -110,6 +110,16 @@
         "icon": "$(add)"
       },
       {
+        "command": "pipelines.moveUp",
+        "title": "Move Up",
+        "icon": "$(arrow-up)"
+      },
+      {
+        "command": "pipelines.moveDown",
+        "title": "Move Down",
+        "icon": "$(arrow-down)"
+      },
+      {
         "command": "pipelines.run",
         "title": "Run",
         "icon": "$(debug-start)"
@@ -161,6 +171,16 @@
       "view/title": [
         {
           "command": "pipelines.add",
+          "when": "view == pipelines",
+          "group": "navigation"
+        },
+        {
+          "command": "pipelines.moveUp",
+          "when": "view == pipelines",
+          "group": "navigation"
+        },
+        {
+          "command": "pipelines.moveDown",
           "when": "view == pipelines",
           "group": "navigation"
         }
@@ -235,16 +255,6 @@
           "command": "pipelines.remove",
           "when": "view == pipelines && viewItem == stopped",
           "group": "pipeline.z"
-        },
-        {
-          "command": "pipelines.moveUp",
-          "when": "view == pipelines && viewItem == stopped",
-          "group": "inline"
-        },
-        {
-          "command": "pipelines.moveDown",
-          "when": "view == pipelines && viewItem == stopped",
-          "group": "inline"
         }
       ]
     }

@@ -9,6 +9,7 @@ export class Scriptastic {
     //private runsViewer: vscode.TreeView<any>;
     //private runsTreeDataProvider: runs.RunsTreeDataProvider;
     private state: State;
+    private selected: pipelines.Dependency | undefined;
 
     constructor(private context: vscode.ExtensionContext) {
         this.state = new State(context);
@@ -31,11 +32,11 @@ export class Scriptastic {
                 }
             });
         this.pipelinesViewer = vscode.window.createTreeView('pipelines', { treeDataProvider: this.pipelinesTreeDataProvider });
-        /*
+        
         this.pipelinesViewer.onDidChangeSelection(e => {
            this.onDidChangePipelinesSelection(e.selection);
         });
-  
+        /*
         // runs view
         this.runsTreeDataProvider = new runs.RunsTreeDataProvider(context, this.state);
         this.runsViewer = vscode.window.createTreeView('runs', { treeDataProvider : this.runsTreeDataProvider, canSelectMany: true });
@@ -107,15 +108,18 @@ export class Scriptastic {
             }
         });
 
-        this.registerCommand(context, 'pipelines.moveUp', (dependency: pipelines.Dependency) => {
+        this.registerCommand(context, 'pipelines.moveUp', () => {
             try {
-                let pipelineArr = this.state.getPipelines();
-                const index = pipelineArr.indexOf(dependency.name);
-                if (index >= 1) {
-                    pipelineArr.splice(index - 1, 0, pipelineArr.splice(index, 1)[0]);
-                    this.state.setPipelines(pipelineArr);
-                    this.pipelinesTreeDataProvider.refresh();
-                }      
+                if (this.selected)
+                {
+                    let pipelineArr = this.state.getPipelines();
+                    const index = pipelineArr.indexOf(this.selected.name);
+                    if (index >= 1) {
+                        pipelineArr.splice(index - 1, 0, pipelineArr.splice(index, 1)[0]);
+                        this.state.setPipelines(pipelineArr);
+                        this.pipelinesTreeDataProvider.refresh();
+                    }
+                }
             } catch (err) {
                 vscode.window.showErrorMessage(err.toString());
             }
@@ -123,13 +127,16 @@ export class Scriptastic {
 
         this.registerCommand(context, 'pipelines.moveDown', (dependency: pipelines.Dependency) => {
             try {
-                let pipelineArr = this.state.getPipelines();
-                const index = pipelineArr.indexOf(dependency.name);
-                if (index >= 0 && index < pipelineArr.length - 1) {
-                    pipelineArr.splice(index + 1, 0, pipelineArr.splice(index, 1)[0]);
-                    this.state.setPipelines(pipelineArr);
-                    this.pipelinesTreeDataProvider.refresh();
-                }      
+                if (this.selected)
+                {
+                    let pipelineArr = this.state.getPipelines();
+                    const index = pipelineArr.indexOf(this.selected.name);
+                    if (index >= 0 && index < pipelineArr.length - 1) {
+                        pipelineArr.splice(index + 1, 0, pipelineArr.splice(index, 1)[0]);
+                        this.state.setPipelines(pipelineArr);
+                        this.pipelinesTreeDataProvider.refresh();
+                    }   
+                }   
             } catch (err) {
                 vscode.window.showErrorMessage(err.toString());
             }
@@ -177,11 +184,14 @@ export class Scriptastic {
         }
     }
 
-    /*private onDidChangePipelinesSelection(selection: pipelines.Dependency[]) {
-       if (selection[0].contextValue === 'pipeline') {
+    private onDidChangePipelinesSelection(selection: pipelines.Dependency[]) {
+       if (selection.length > 0) {
+           this.selected = selection[0];
+       } else {
+           this.selected = undefined;
        }
     }
- 
+    /*
     private onDidChangeRunsSelection(selection: any[])  {
        // TODO
     }*/
