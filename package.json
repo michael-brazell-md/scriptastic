@@ -10,7 +10,7 @@
     "name": "Michael Brazell",
     "email": "mbrazell@protonmail.com"
   },
-  "version": "0.0.6",
+  "version": "0.0.7",
   "engines": {
     "vscode": "^1.50.0"
   },
@@ -42,42 +42,6 @@
           "description": "Path to the shell executable to use for script execution on Linux",
           "default": "/bin/bash",
           "title": "Linux Shell Executable"
-        },
-        "scriptastic.shellOpts.windows": {
-          "type": "string",
-          "description": "Startup options for the shell executable on Windows",
-          "default": "/c",
-          "title": "Windows Shell Options"
-        },
-        "scriptastic.shellOpts.osx": {
-          "type": "string",
-          "description": "Startup options for the shell executable on OSX",
-          "default": "-c",
-          "title": "OSX Shell Options"
-        },
-        "scriptastic.shellOpts.linux": {
-          "type": "string",
-          "description": "Startup options for the shell executable on Linux",
-          "default": "-c",
-          "title": "Linux Shell Options"
-        },
-        "scriptastic.scriptDelim.windows": {
-          "type": "string",
-          "description": "Delimiter to use for script chaining on Windows",
-          "default": "&",
-          "title": "Windows Script Delimiter"
-        },
-        "scriptastic.scriptDelim.osx": {
-          "type": "string",
-          "description": "Delimiter to use for script chaining on OSX",
-          "default": ";",
-          "title": "OSX Script Delimiter"
-        },
-        "scriptastic.scriptDelim.linux": {
-          "type": "string",
-          "description": "Delimiter to use for script chaining on Linux",
-          "default": ";",
-          "title": "Linux Script Delimiter"
         }
       }
     },
