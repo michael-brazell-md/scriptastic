@@ -10,7 +10,7 @@
     "name": "Michael Brazell",
     "email": "mbrazell@protonmail.com"
   },
-  "version": "0.0.5",
+  "version": "0.0.6",
   "engines": {
     "vscode": "^1.50.0"
   },
@@ -28,7 +28,7 @@
         "scriptastic.shellExec.windows": {
           "type": "string",
           "description": "Path to the shell executable to use for script execution on Windows",
-          "default": "C:\\Windows\\System32\\cmd.exe",
+          "default": "cmd.exe",
           "title": "Windows Shell Executable"
         },
         "scriptastic.shellExec.osx": {
