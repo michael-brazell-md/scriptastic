@@ -19,12 +19,11 @@ export class Pipeline {
 }
 
 class PipelineResources {
-
-   outputCh: vscode.OutputChannel;
+   terminal: vscode.Terminal;
    proc: cp.ChildProcess | undefined = undefined;
 
    constructor(public readonly name: string) {
-      this.outputCh = vscode.window.createOutputChannel(name + " - Scriptastic");
+      this.terminal = vscode.window.createTerminal(name + " - Scriptastic");
    }
 }
 
@@ -171,10 +170,10 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
          if (selection === 'Yes, Remove') {
             const pipeline = this.state.getPipeline(name);
             if (pipeline) {
-               // hide/dispose output
+               // hide/dispose terminal
                if (pipelineRes) {
-                  pipelineRes.outputCh.hide();
-                  pipelineRes.outputCh.dispose();
+                  pipelineRes.terminal.hide();
+                  pipelineRes.terminal.dispose();
                }
                this.nameToResourcesMap[name] = undefined;
                this.state.remPipeline(name);
@@ -258,17 +257,17 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
          }
 
          // formulate params
-         let scripts = pipeline.script[0];
+         let scripts = '"' + pipeline.script[0];
          for (let i = 1; i < pipeline.script.length; i++) {
             scripts += scriptDelim;
             scripts += pipeline.script[i];
          }
+         scripts += '"';
          let params = shellOpts;
          params.push(scripts);
          
-         // clear/show output  
-         pipelineRes.outputCh.clear();
-         pipelineRes.outputCh.show();
+         // show terminal  
+         pipelineRes.terminal.show();
 
          // get path to shell exe from settings
          const shellExec = this.state.getConfigurationPropertyAsString('shellExec', platform);
@@ -277,48 +276,14 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
             return;
          }
          
-         // output command being executed
-         pipelineRes.outputCh.append(shellExec + ' ');
+         // formulate command string
+         let command = shellExec;
          params.forEach(param => {
-            pipelineRes.outputCh.append(param + ' ');
-         });
-         pipelineRes.outputCh.append('\n');
-
-         // spawn
-         const proc = cp.spawn(shellExec, params);
-         pipelineRes.proc = proc;
-         this.refresh();
-
-         // invoke started event cb
-         this.on('started', name);
-
-         // stdout cb
-         proc.stdout.on('data', (data) => {
-            // invoke updated event cb
-            this.on('updated', name);
-            pipelineRes.outputCh.append(data.toString());
+            command += ' ' + param + ' ';
          });
 
-         // stderr cb
-         proc.stderr.on('data', (data) => {
-            // invoke updated event cb
-            this.on('updated', name);
-            pipelineRes.outputCh.append(data.toString());
-         });
-
-         // close cb
-         proc.on('close', async (code) => {
-            pipelineRes.proc = undefined;
-            this.refresh();
-            // invoke stopped event cb
-            this.on('stopped', name);
-            /*let selection = (code === 0 ?
-               await vscode.window.showInformationMessage('Nextflow process exited with code: ' + code.toString(), 'Open Report') :
-               await vscode.window.showWarningMessage('Nextflow process exited with code: ' + code.toString(), 'Open Report'));
-            if (selection === 'Open Report') {
-               cp.spawn('open', [path.join(workFolder, 'report.htm')]);
-            }*/
-         });
+         // send command to terminal for execution
+         pipelineRes.terminal.sendText(command, true);
       } catch (err) {
          vscode.window.showErrorMessage(err.toString());
       }
