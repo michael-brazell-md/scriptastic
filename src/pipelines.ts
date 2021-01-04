@@ -10,7 +10,6 @@ import { State } from './state';
 import { Pipe } from 'stream';
 import { getVSCodeDownloadUrl } from 'vscode-test/out/util';
 import { URLSearchParams } from 'url';
-import { notDeepEqual } from 'assert';
 
 export class Pipeline {
    constructor(public readonly name: string,
@@ -19,11 +18,11 @@ export class Pipeline {
 }
 
 class PipelineResources {
-   terminal: vscode.Terminal;
+   terminal: vscode.Terminal | undefined = undefined;
+   shellExec: string | undefined = undefined;
    proc: cp.ChildProcess | undefined = undefined;
 
    constructor(public readonly name: string) {
-      this.terminal = vscode.window.createTerminal(name + " - Scriptastic");
    }
 }
 
@@ -171,9 +170,10 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
             const pipeline = this.state.getPipeline(name);
             if (pipeline) {
                // hide/dispose terminal
-               if (pipelineRes) {
+               if (pipelineRes && pipelineRes.terminal) {
                   pipelineRes.terminal.hide();
                   pipelineRes.terminal.dispose();
+                  pipelineRes.terminal = undefined;
                }
                this.nameToResourcesMap[name] = undefined;
                this.state.remPipeline(name);
@@ -242,13 +242,6 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
             return;
          }
 
-         // get script delimiter from settings
-         const scriptDelim = this.state.getConfigurationPropertyAsString('scriptDelim', platform);
-         if (scriptDelim === undefined) {
-            vscode.window.showErrorMessage('Define a script delimiter for your platform in settings before running');
-            return;
-         }
-
          // get startup options for shell exe from settings
          let shellOpts: string[] = [];
          const shellOptsPlatform = this.state.getConfigurationPropertyAsString('shellOpts', platform);
@@ -256,34 +249,47 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
             shellOpts.push(shellOptsPlatform);
          }
 
-         // formulate params
-         let scripts = '"' + pipeline.script[0];
-         for (let i = 1; i < pipeline.script.length; i++) {
-            scripts += scriptDelim;
-            scripts += pipeline.script[i];
-         }
-         scripts += '"';
-         let params = shellOpts;
-         params.push(scripts);
-         
-         // show terminal  
-         pipelineRes.terminal.show();
-
          // get path to shell exe from settings
          const shellExec = this.state.getConfigurationPropertyAsString('shellExec', platform);
-         if (shellExec === undefined) {
-            vscode.window.showErrorMessage('Define a shell executable for your platform in settings before running');
+         // if undefined, default from vscode settings will be used
+         
+         // create terminal if necessary
+         if (pipelineRes.terminal === undefined || pipelineRes.shellExec !== shellExec) {
+            pipelineRes.terminal = vscode.window.createTerminal(name + " - Scriptastic", shellExec);  
+            pipelineRes.shellExec = shellExec;
+         }
+         if (pipelineRes.terminal === undefined) {
+            vscode.window.showErrorMessage('Failed to create terminal');
             return;
          }
+         pipelineRes.terminal.show();
          
-         // formulate command string
-         let command = shellExec;
-         params.forEach(param => {
-            command += ' ' + param + ' ';
-         });
+         // setup scripts array per platform
+         let scripts: string[] = [];
+         switch(platform)
+         {
+            case 'windows':
+               // TODO: should be able to use script '&' delimiter on windows as before
+               scripts = pipeline.script;
+               break;
+            case 'osx':
+            case 'linux':
+               // for bash at least, the scripts must be on the same line with delimiter
+               // (repeated calls to sendText doesn't seem to work on these platforms)
+               scripts.push(pipeline.script[0]);
+               for (let i = 1; i < pipeline.script.length; i++) {
+                  scripts[0] += ';';
+                  scripts[0] += pipeline.script[i];
+               }
+               break;
+         }
 
-         // send command to terminal for execution
-         pipelineRes.terminal.sendText(command, true);
+         // execute script(s)
+         scripts.forEach(script => {
+            if (pipelineRes.terminal !== undefined) {
+               pipelineRes.terminal.sendText(script, true);
+            }
+         });
       } catch (err) {
          vscode.window.showErrorMessage(err.toString());
       }
