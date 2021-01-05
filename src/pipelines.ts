@@ -20,6 +20,7 @@ export class Pipeline {
 class PipelineResources {
    terminal: vscode.Terminal | undefined = undefined;
    shellExec: string | undefined = undefined;
+   shellOpts: string | undefined = undefined;
    proc: cp.ChildProcess | undefined = undefined;
 
    constructor(public readonly name: string) {
@@ -243,20 +244,17 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
          }
 
          // get startup options for shell exe from settings
-         let shellOpts: string[] = [];
-         const shellOptsPlatform = this.state.getConfigurationPropertyAsString('shellOpts', platform);
-         if (shellOptsPlatform !== undefined) {
-            shellOpts.push(shellOptsPlatform);
-         }
+         const shellOpts = this.state.getConfigurationPropertyAsString('shellOpts', platform);
 
          // get path to shell exe from settings
          const shellExec = this.state.getConfigurationPropertyAsString('shellExec', platform);
-         // if undefined, default from vscode settings will be used
+         // if undefined, default terminal shell from vscode settings will be used
          
          // create terminal if necessary
-         if (pipelineRes.terminal === undefined || pipelineRes.shellExec !== shellExec) {
-            pipelineRes.terminal = vscode.window.createTerminal(name + " - Scriptastic", shellExec);  
+         if (pipelineRes.terminal === undefined || pipelineRes.shellExec !== shellExec || pipelineRes.shellOpts !== shellOpts) {
+            pipelineRes.terminal = vscode.window.createTerminal(name + " - Scriptastic", shellExec, shellOpts);  
             pipelineRes.shellExec = shellExec;
+            pipelineRes.shellOpts = shellOpts;
          }
          if (pipelineRes.terminal === undefined) {
             vscode.window.showErrorMessage('Failed to create terminal');
@@ -264,24 +262,21 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
          }
          pipelineRes.terminal.show();
          
-         // setup scripts array per platform
+         // get script delimiter from settings
+         const scriptDelim = this.state.getConfigurationPropertyAsString('scriptDelim', platform);
+
+         // setup scripts array
          let scripts: string[] = [];
-         switch(platform)
-         {
-            case 'windows':
-               // TODO: should be able to use script '&' delimiter on windows as before
-               scripts = pipeline.script;
-               break;
-            case 'osx':
-            case 'linux':
-               // for bash at least, the scripts must be on the same line with delimiter
-               // (repeated calls to sendText doesn't seem to work on these platforms)
-               scripts.push(pipeline.script[0]);
-               for (let i = 1; i < pipeline.script.length; i++) {
-                  scripts[0] += ';';
-                  scripts[0] += pipeline.script[i];
-               }
-               break;
+         // if delimiter is specified, chain scripts into one command
+         if (scriptDelim !== undefined && scriptDelim !== '') {
+            scripts.push(pipeline.script[0]);
+            for (let i = 1; i < pipeline.script.length; i++) {
+               scripts[0] += scriptDelim;
+               scripts[0] += pipeline.script[i];
+            }
+         }
+         else { // scriptDelim === undefined
+            scripts = pipeline.script;
          }
 
          // execute script(s)
