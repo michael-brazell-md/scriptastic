@@ -251,7 +251,11 @@ export class PipelinesTreeDataProvider implements vscode.TreeDataProvider<Depend
          // if undefined, default terminal shell from vscode settings will be used
          
          // create terminal if necessary
-         if (pipelineRes.terminal === undefined || pipelineRes.shellExec !== shellExec || pipelineRes.shellOpts !== shellOpts) {
+         if (pipelineRes.terminal === undefined || 
+             pipelineRes.terminal.exitStatus !== undefined || 
+             pipelineRes.shellExec !== shellExec || 
+             pipelineRes.shellOpts !== shellOpts) {
+            // create new terminal
             pipelineRes.terminal = vscode.window.createTerminal(name + " - Scriptastic", shellExec, shellOpts);  
             pipelineRes.shellExec = shellExec;
             pipelineRes.shellOpts = shellOpts;
